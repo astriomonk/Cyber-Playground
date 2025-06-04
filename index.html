@@ -1,406 +1,403 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cyber Playground with Fake Popups & Prank</title>
-  <style>
-    html, body {
-      margin: 0; padding: 0; height: 100%; background: black;
-      font-family: monospace;
-      color: #0af;
-      overflow: hidden;
-      transition: all 0.5s;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Futuristic Multi-Activity Terminal</title>
+<style>
+  /* General resets and styles */
+  body, html {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background: black;
+    color: #00f; /* blue text default */
+    font-family: "Courier New", Courier, monospace;
+    overflow: hidden;
+  }
+  .rainbow {
+    animation: rainbowAnim 4s linear infinite;
+  }
+  @keyframes rainbowAnim {
+    0% { color: red; }
+    14% { color: orange; }
+    28% { color: yellow; }
+    42% { color: green; }
+    57% { color: blue; }
+    71% { color: indigo; }
+    85% { color: violet; }
+    100% { color: red; }
+  }
+  #container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100vw;
+  }
+  #leftPanel {
+    width: 30%;
+    background: #001022;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 2px solid #0044ff;
+  }
+  #rightPanel {
+    flex-grow: 1;
+    background: #000;
+    position: relative;
+    color: #00f;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
 
-    header {
-      display: flex;
-      background: #111;
-      border-bottom: 2px solid #0af;
-    }
+  h2 {
+    color: #00f;
+    margin-top: 0;
+  }
 
-    header button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      background: black;
-      color: #0af;
-      font-size: 16px;
-      cursor: pointer;
-      user-select: none;
-    }
+  /* Terminal Styles */
+  #terminal {
+    background: #000;
+    color: #00f;
+    font-family: monospace;
+    padding: 10px;
+    height: 50vh;
+    overflow-y: auto;
+    border: 1px solid #0044ff;
+    margin-bottom: 10px;
+    user-select: none;
+  }
+  #terminal.rainbow {
+    animation: rainbowAnim 5s linear infinite;
+  }
+  #terminalInput {
+    width: 100%;
+    font-family: monospace;
+    font-size: 1rem;
+    padding: 5px;
+    border: none;
+    border-top: 1px solid #0044ff;
+    background: #001011;
+    color: #00f;
+    outline: none;
+  }
+  #terminalInput.rainbow {
+    animation: rainbowAnim 4s linear infinite;
+  }
 
-    header button.active {
-      background: #0af;
-      color: black;
-    }
+  /* Buttons and activity selectors */
+  button.activity-btn {
+    width: 100%;
+    margin: 4px 0;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 1rem;
+    color: #00f;
+    background: #001022;
+    border: 1px solid #0044ff;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button.activity-btn:hover {
+    background: #0033ff;
+    color: #fff;
+  }
+  button.activity-btn.rainbow {
+    animation: rainbowAnim 4s linear infinite;
+  }
 
-    .tab {
-      display: none;
-      height: calc(100vh - 42px);
-      overflow: hidden;
-      position: relative;
-      padding: 10px;
-      box-sizing: border-box;
-    }
+  /* Activity Display Area */
+  #activityDisplay {
+    flex-grow: 1;
+    background: #000;
+    border-top: 2px solid #0044ff;
+    padding: 15px;
+    overflow: auto;
+    color: #00f;
+    font-family: monospace;
+    font-size: 1.1rem;
+  }
+  #activityDisplay.rainbow {
+    animation: rainbowAnim 5s linear infinite;
+  }
 
-    .tab.active {
-      display: block;
-    }
-
-    .emoji-explode {
-      position: absolute;
-      font-size: 2rem;
-      animation: explode 1s ease-out forwards;
-      pointer-events: none;
-    }
-
-    @keyframes explode {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: translateY(-100px) scale(2); opacity: 0; }
-    }
-
-    .keyboard-flash {
-      position: absolute;
-      font-size: 2rem;
-      pointer-events: none;
-    }
-
-    .leak {
-      font-size: 14px;
-      animation: leakmove 6s linear forwards;
-      position: absolute;
-      white-space: nowrap;
-    }
-
-    @keyframes leakmove {
-      0% { left: 100%; }
-      100% { left: -100%; }
-    }
-
-    .icon {
-      width: 100px;
-      height: 100px;
-      background: #0af2;
-      color: #0af;
-      border: 1px solid #0af;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 10px;
-      cursor: move;
-      position: absolute;
-      user-select: none;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-    }
-    .icon:hover {
-      background: #0af6;
-    }
-
-    .window {
-      position: absolute;
-      top: 100px;
-      left: 100px;
-      width: 320px;
-      height: 240px;
-      background: #111;
-      color: #0af;
-      border: 2px solid #0af;
-      padding: 10px;
-      box-sizing: border-box;
-      overflow: auto;
-      border-radius: 10px;
-      user-select: text;
-      box-shadow: 0 0 15px #0af8;
-    }
-    .window header {
-      font-weight: bold;
-      font-size: 18px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: move;
-    }
-    .window header button {
-      background: #222;
-      border: none;
-      color: #0af;
-      font-size: 18px;
-      cursor: pointer;
-      border-radius: 4px;
-      padding: 0 8px;
-    }
-    .window header button:hover {
-      background: #0af;
-      color: black;
-    }
-
-    /* RAINBOW MODE */
-    .rainbow-mode * {
-      animation: rainbowColor 5s infinite linear !important;
-    }
-
-    .rainbow-mode body {
-      animation: rainbowBG 10s infinite linear;
-    }
-
-    @keyframes rainbowColor {
-      0% { color: red; border-color: red; background-color: #000; }
-      20% { color: orange; border-color: orange; }
-      40% { color: yellow; border-color: yellow; }
-      60% { color: green; border-color: green; }
-      80% { color: blue; border-color: blue; }
-      100% { color: violet; border-color: violet; }
-    }
-
-    @keyframes rainbowBG {
-      0% { background: #111; }
-      20% { background: #222; }
-      40% { background: #333; }
-      60% { background: #111; }
-      80% { background: #222; }
-      100% { background: #111; }
-    }
-
-    textarea {
-      width: 100%;
-      height: 80%;
-      background: black;
-      color: #0af;
-      border: 1px solid #0af;
-      resize: none;
-      font-family: monospace;
-      font-size: 16px;
-      padding: 5px;
-      box-sizing: border-box;
-      border-radius: 5px;
-    }
-  </style>
+  /* Matrix Rain Canvas */
+  #matrixCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <button class="tab-btn active" data-tab="emoji">Emoji Hacker</button>
-    <button class="tab-btn" data-tab="keyboard">Keyboard Game</button>
-    <button class="tab-btn" data-tab="leak">Data Breach</button>
-    <button class="tab-btn" data-tab="desktop">Retro Desktop</button>
-  </header>
-
-  <div id="emoji" class="tab active">
-    <input type="text" id="emojiInput" placeholder="Type here..." style="width:100%; padding:10px; font-size:18px;">
+<div id="container">
+  <div id="leftPanel">
+    <h2>Activities</h2>
+    <button id="btnTerminal" class="activity-btn">Terminal</button>
+    <button id="btnMatrix" class="activity-btn">Matrix Rain</button>
+    <button id="btnRetro" class="activity-btn">Retro Desktop</button>
+    <button id="btnFullscreen" class="activity-btn" id="btn0">Fullscreen (0)</button>
+    <button id="btnFakePopup" class="activity-btn">Fake Popup</button>
+    <button id="btnRainbowMode" class="activity-btn">Toggle Rainbow Mode (Konami)</button>
+    <hr />
+    <div><b>Retro Desktop Extras:</b></div>
+    <button id="btnCalculator" class="activity-btn">Calculator</button>
+    <button id="btnNotepad" class="activity-btn">Notepad</button>
+    <button id="btnClock" class="activity-btn">Clock</button>
+    <button id="btnColorPicker" class="activity-btn">Color Picker</button>
   </div>
 
-  <div id="keyboard" class="tab"></div>
-
-  <div id="leak" class="tab"></div>
-
-  <div id="desktop" class="tab" style="position:relative;">
-    <div class="icon" style="top:50px; left:50px;" onclick="spawnWindow('Terminal')">🖥️ Terminal</div>
-    <div class="icon" style="top:50px; left:170px;" onclick="spawnWindow('Chat')">💬 Chat</div>
-    <div class="icon" style="top:50px; left:290px;" onclick="spawnWindow('Self-Destruct')">💣 Self-Destruct</div>
-    <div class="icon" style="top:50px; left:410px;" onclick="spawnWindow('Notes')">📝 Notes</div>
-    <div class="icon" style="top:50px; left:530px;" onclick="spamPopups()">📛 Popups</div>
+  <div id="rightPanel">
+    <div id="terminal" hidden></div>
+    <input id="terminalInput" type="text" placeholder="Enter command..." hidden autocomplete="off" spellcheck="false" />
+    <canvas id="matrixCanvas" hidden></canvas>
+    <div id="activityDisplay" hidden></div>
   </div>
+</div>
 
 <script>
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('active');
-    });
-  });
+  // Elements
+  const terminal = document.getElementById('terminal');
+  const terminalInput = document.getElementById('terminalInput');
+  const matrixCanvas = document.getElementById('matrixCanvas');
+  const activityDisplay = document.getElementById('activityDisplay');
+  const btnTerminal = document.getElementById('btnTerminal');
+  const btnMatrix = document.getElementById('btnMatrix');
+  const btnRetro = document.getElementById('btnRetro');
+  const btnFullscreen = document.getElementById('btnFullscreen'); // Fullscreen toggle button (0)
+  const btnFakePopup = document.getElementById('btnFakePopup');
+  const btnRainbowMode = document.getElementById('btnRainbowMode');
+  const btnCalculator = document.getElementById('btnCalculator');
+  const btnNotepad = document.getElementById('btnNotepad');
+  const btnClock = document.getElementById('btnClock');
+  const btnColorPicker = document.getElementById('btnColorPicker');
 
-  // Emoji Hacker
-  const emojiList = ['💥','🤖','👾','🚀','💣','🧠','🛸','🌌'];
-  document.getElementById('emojiInput').addEventListener('input', () => {
-    for(let i=0; i<5; i++) {
-      const e = document.createElement('div');
-      e.textContent = emojiList[Math.floor(Math.random()*emojiList.length)];
-      e.className = 'emoji-explode';
-      e.style.left = Math.random()*window.innerWidth+'px';
-      e.style.top = window.innerHeight - 100 + 'px';
-      document.body.appendChild(e);
-      setTimeout(()=>e.remove(), 1000);
-    }
-  });
+  // State
+  let rainbowMode = false;
 
-  // Keyboard Game
-  document.addEventListener('keydown', (e) => {
-    if (!document.getElementById('keyboard').classList.contains('active')) return;
-    const k = document.createElement('div');
-    k.className = 'keyboard-flash';
-    k.textContent = e.key.toUpperCase();
-    k.style.left = Math.random()*window.innerWidth+'px';
-    k.style.top = Math.random()*window.innerHeight+'px';
-    k.style.color = `hsl(${Math.random()*360}, 100%, 70%)`;
-    document.body.appendChild(k);
-    setTimeout(()=>k.remove(), 1000);
-  });
-
-  // Data Breach
-  const fakeUsers = ["admin","neo","cybercat","ghost"];
-  const fakePasswords = ["1234","matrix","hunter2","n3ural"];
-  setInterval(() => {
-    if (!document.getElementById('leak').classList.contains('active')) return;
-    const div = document.createElement('div');
-    div.className = 'leak';
-    div.style.top = Math.random()*window.innerHeight + 'px';
-    div.style.color = `hsl(${Math.random()*360},100%,70%)`;
-    div.textContent = fakeUsers[Math.floor(Math.random()*fakeUsers.length)] + ' : ' + fakePasswords[Math.floor(Math.random()*fakePasswords.length)];
-    document.getElementById('leak').appendChild(div);
-    setTimeout(()=>div.remove(), 5000);
-  }, 700);
-
-  // Desktop windows
-  function spawnWindow(type) {
-    const w = document.createElement('div');
-    w.className = 'window';
-    w.style.top = '120px';
-    w.style.left = '120px';
-
-    if (type === 'Terminal') {
-      w.innerHTML = `
-        <header>Terminal <button title="Close" onclick="this.closest('.window').remove()">❌</button></header>
-        <div>> <input id="term" style="width:100%;background:#000;color:#0af;border:none;outline:none;font-family: monospace;font-size:16px;"></div>
-        <div id="output" style="margin-top:10px;white-space: pre-wrap; height: 140px; overflow-y: auto;"></div>
-      `;
-      setTimeout(() => {
-        const term = w.querySelector('#term');
-        const out = w.querySelector('#output');
-        term.focus();
-        term.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') {
-            let val = term.value.trim();
-            out.innerHTML += `\n> ${val}`;
-            if (val === 'help') out.innerHTML += '\ncommands: help, clear, whoami, hack';
-            else if (val === 'clear') out.innerHTML = '';
-            else if (val === 'whoami') out.innerHTML += '\nYou are: user1337';
-            else if (val === 'hack') out.innerHTML += '\nAccessing mainframe... ✔️';
-            else out.innerHTML += '\nUnknown command.';
-            out.scrollTop = out.scrollHeight;
-            term.value = '';
-          }
-        });
-      }, 50);
-    } else if (type === 'Chat') {
-      w.innerHTML = `
-        <header>ChatBot <button title="Close" onclick="this.closest('.window').remove()">❌</button></header>
-        <div>Hello! Try typing /joke or /hello</div>
-      `;
-    } else if (type === 'Self-Destruct') {
-      w.innerHTML = `
-        <header>Self-Destruct <button title="Close" onclick="this.closest('.window').remove()">❌</button></header>
-        <div>Self-Destruct Initiated... 💥<br>Just kidding!</div>
-      `;
-    } else if (type === 'Notes') {
-      w.innerHTML = `
-        <header>Notes <button title="Close" onclick="this.closest('.window').remove()">❌</button></header>
-        <textarea placeholder="Write your notes here..."></textarea>
-      `;
-    }
-    document.getElementById('desktop').appendChild(w);
-    makeDraggable(w);
+  // Helper: Toggle visibility
+  function hideAllActivities() {
+    terminal.hidden = true;
+    terminalInput.hidden = true;
+    matrixCanvas.hidden = true;
+    activityDisplay.hidden = true;
+    stopMatrix();
   }
 
-  function makeDraggable(el) {
-    let isDown = false;
-    let offset = [0, 0];
-    let header = el.querySelector('header') || el;
-    header.style.cursor = 'move';
-
-    header.addEventListener('mousedown', function(e) {
-      isDown = true;
-      offset = [ el.offsetLeft - e.clientX, el.offsetTop - e.clientY ];
-      e.preventDefault();
+  // Rainbow toggle function
+  function toggleRainbowMode(on) {
+    if(on === undefined) on = !rainbowMode;
+    rainbowMode = on;
+    const elements = [document.body, terminal, terminalInput, activityDisplay];
+    const buttons = document.querySelectorAll('button.activity-btn');
+    elements.forEach(el => {
+      if (rainbowMode) el.classList.add('rainbow');
+      else el.classList.remove('rainbow');
     });
-    document.addEventListener('mouseup', () => isDown = false);
-    document.addEventListener('mousemove', function(e) {
-      if (isDown) {
-        el.style.left = (e.clientX + offset[0]) + 'px';
-        el.style.top = (e.clientY + offset[1]) + 'px';
+    buttons.forEach(btn => {
+      if (rainbowMode) btn.classList.add('rainbow');
+      else btn.classList.remove('rainbow');
+    });
+  }
+
+  // Terminal activity
+  function showTerminal() {
+    hideAllActivities();
+    terminal.hidden = false;
+    terminalInput.hidden = false;
+    terminal.textContent = 'Welcome to the Futuristic Terminal.\nType "help" for commands.\n';
+    terminalInput.value = '';
+    terminalInput.focus();
+  }
+
+  terminalInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const cmd = terminalInput.value.trim().toLowerCase();
+      if(cmd === '') return;
+      terminal.textContent += `> ${cmd}\n`;
+      handleTerminalCommand(cmd);
+      terminalInput.value = '';
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+  });
+
+  function handleTerminalCommand(cmd) {
+    if (cmd === 'help') {
+      terminal.textContent += 'Commands: help, clear, echo [text], time, rainbow, exit\n';
+    } else if (cmd === 'clear') {
+      terminal.textContent = '';
+    } else if (cmd.startsWith('echo ')) {
+      terminal.textContent += cmd.substring(5) + '\n';
+    } else if (cmd === 'time') {
+      terminal.textContent += new Date().toLocaleTimeString() + '\n';
+    } else if (cmd === 'rainbow') {
+      toggleRainbowMode();
+      terminal.textContent += 'Rainbow mode toggled.\n';
+    } else if (cmd === 'exit') {
+      hideAllActivities();
+    } else {
+      terminal.textContent += 'Unknown command.\n';
+    }
+  }
+
+  // Matrix rain activity
+  let matrixInterval;
+  function startMatrix() {
+    matrixCanvas.hidden = false;
+    const ctx = matrixCanvas.getContext('2d');
+    let width, height;
+    function resize() {
+      width = matrixCanvas.width = matrixCanvas.clientWidth;
+      height = matrixCanvas.height = matrixCanvas.clientHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    const columns = Math.floor(width / 14);
+    const drops = new Array(columns).fill(1);
+    ctx.font = '14px monospace';
+
+    matrixInterval = setInterval(() => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = rainbowMode ? `hsl(${Math.floor(Math.random()*360)}, 100%, 70%)` : '#00f';
+      for(let i=0; i < drops.length; i++) {
+        const text = String.fromCharCode(0x30A0 + Math.random() * 96);
+        ctx.fillText(text, i * 14, drops[i] * 14);
+        if(drops[i]*14 > height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
       }
+    }, 40);
+  }
+  function stopMatrix() {
+    clearInterval(matrixInterval);
+  }
+
+  // Retro Desktop area
+  function showRetro() {
+    hideAllActivities();
+    activityDisplay.hidden = false;
+    activityDisplay.textContent = 'Welcome to Retro Desktop!\n\nSelect an app on the left to launch it.';
+  }
+
+  // Calculator app
+  function showCalculator() {
+    hideAllActivities();
+    activityDisplay.hidden = false;
+    activityDisplay.innerHTML = `
+      <div>
+        <input type="text" id="calcDisplay" style="width: 100%; font-size:1.5rem; margin-bottom:10px; background:#001011; color:#00f; border:1px solid #0044ff; padding:5px;"/>
+        <div id="calcButtons" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:5px;">
+          <button>7</button><button>8</button><button>9</button><button>/</button>
+          <button>4</button><button>5</button><button>6</button><button>*</button>
+          <button>1</button><button>2</button><button>3</button><button>-</button>
+          <button>0</button><button>.</button><button>=</button><button>+</button>
+        </div>
+      </div>
+    `;
+    const display = document.getElementById('calcDisplay');
+    const buttons = document.getElementById('calcButtons');
+    buttons.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(btn.textContent === '=') {
+          try {
+            display.value = eval(display.value) || '';
+          } catch {
+            display.value = 'Error';
+          }
+        } else {
+          if(display.value === 'Error') display.value = '';
+          display.value += btn.textContent;
+        }
+      });
     });
   }
 
-  // Konami Code triggers rainbow mode
-  const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-  let keys = [];
-  window.addEventListener('keydown', function(e) {
-    keys.push(e.key);
-    if (keys.length > 10) keys.shift();
-    if (keys.join(',') === konami.join(',')) {
-      document.body.classList.toggle('rainbow-mode');
-      alert("🌈 Rainbow mode toggled!");
+  // Notepad app
+  function showNotepad() {
+    hideAllActivities();
+    activityDisplay.hidden = false;
+    activityDisplay.innerHTML = `<textarea style="width: 100%; height: 90%; background:#001011; color:#00f; border:1px solid #0044ff; font-family: monospace; font-size:1rem; padding:10px;" placeholder="Start typing..."></textarea>`;
+  }
+
+  // Clock app
+  function showClock() {
+    hideAllActivities();
+    activityDisplay.hidden = false;
+    function updateClock() {
+      const now = new Date();
+      activityDisplay.textContent = now.toLocaleTimeString();
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  }
+
+  // Color picker app
+  function showColorPicker() {
+    hideAllActivities();
+    activityDisplay.hidden = false;
+    activityDisplay.innerHTML = `
+      <input type="color" id="colorInput" value="#0000ff" />
+      <p id="colorValue" style="margin-top:10px; font-size:1.2rem;">#0000ff</p>
+    `;
+    const colorInput = document.getElementById('colorInput');
+    const colorValue = document.getElementById('colorValue');
+    colorInput.addEventListener('input', () => {
+      colorValue.textContent = colorInput.value;
+    });
+  }
+
+  // Fake popup
+  function showFakePopup() {
+    alert('Warning! System overload detected.\nPlease wait...');
+  }
+
+  // Fullscreen toggle
+  btnFullscreen.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        alert(`Fullscreen request failed: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
     }
   });
 
-  // Fake Popups with Deny/Allow prank
-
-  function spamPopups() {
-    for (let i = 0; i < 5; i++) {
-      setTimeout(spawnFakePopup, i * 300);
+  // Konami code detection for rainbow mode
+  const konamiCode = [38,38,40,40,37,39,37,39,66,65];
+  let konamiPosition = 0;
+  window.addEventListener('keydown', e => {
+    if(e.keyCode === konamiCode[konamiPosition]) {
+      konamiPosition++;
+      if(konamiPosition === konamiCode.length) {
+        toggleRainbowMode(true);
+        alert('Rainbow mode activated by Konami code!');
+        konamiPosition = 0;
+      }
+    } else {
+      konamiPosition = 0;
     }
-  }
+  });
 
-  function spawnFakePopup() {
-    const popup = document.createElement("div");
-    popup.className = "window";
-    popup.style.top = (Math.random() * (window.innerHeight - 200) + 50) + "px";
-    popup.style.left = (Math.random() * (window.innerWidth - 320) + 50) + "px";
+  // Button event listeners
+  btnTerminal.addEventListener('click', showTerminal);
+  btnMatrix.addEventListener('click', () => {
+    hideAllActivities();
+    matrixCanvas.hidden = false;
+    startMatrix();
+  });
+  btnRetro.addEventListener('click', showRetro);
+  btnFakePopup.addEventListener('click', showFakePopup);
+  btnRainbowMode.addEventListener('click', () => toggleRainbowMode());
 
-    // Random prank messages
-    const messages = [
-      "💀 VIRUS DETECTED! Removing system32...",
-      "🧠 Neural Overload Detected!",
-      "🚨 Memory Leak at 0xC0FFEE!",
-      "📡 Connecting to intergalactic internet...",
-      "🛸 Alien signal received: 'run.exe'",
-      "🔥 CPU Temp: 999°C"
-    ];
-    const msg = messages[Math.floor(Math.random() * messages.length)];
+  btnCalculator.addEventListener('click', showCalculator);
+  btnNotepad.addEventListener('click', showNotepad);
+  btnClock.addEventListener('click', showClock);
+  btnColorPicker.addEventListener('click', showColorPicker);
 
-    popup.innerHTML = `
-      <header>🚫 SYSTEM ALERT <button title="Close" onclick="this.closest('.window').remove()">❌</button></header>
-      <div style="font-size:14px; margin: 10px 0;">${msg}</div>
-      <div style="text-align:center;">
-        <button id="denyBtn" style="background:#f00; color:#fff; border:none; padding:6px 12px; margin-right:10px; cursor:pointer; border-radius:4px;">Deny</button>
-        <button id="allowBtn" style="background:#0f0; color:#000; border:none; padding:6px 12px; cursor:pointer; border-radius:4px;">Allow</button>
-      </div>
-      <div id="prankResponse" style="margin-top:10px; font-weight:bold; min-height:20px;"></div>
-    `;
+  // Load default activity
+  showTerminal();
 
-    document.getElementById("desktop").appendChild(popup);
-    makeDraggable(popup);
-
-    // Prank button behavior
-    const denyBtn = popup.querySelector("#denyBtn");
-    const allowBtn = popup.querySelector("#allowBtn");
-    const response = popup.querySelector("#prankResponse");
-
-    denyBtn.addEventListener("click", () => {
-      response.textContent = "Access denied. Nothing happened.";
-      denyBtn.disabled = true;
-      allowBtn.disabled = true;
-    });
-    allowBtn.addEventListener("click", () => {
-      response.textContent = "Warning: You allowed the prank! 🎉";
-      denyBtn.disabled = true;
-      allowBtn.disabled = true;
-      // Optional: make popup flash or wiggle
-      let count = 0;
-      const wiggle = setInterval(() => {
-        if(count++ > 10) {
-          clearInterval(wiggle);
-          popup.style.transform = '';
-          return;
-        }
-        popup.style.transform = `translate(${(count % 2 ? 5 : -5)}px, 0)`;
-      }, 100);
-    });
-  }
 </script>
 </body>
 </html>
