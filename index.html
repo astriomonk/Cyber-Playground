@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber Playground</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      background: black;
+      font-family: monospace;
+      color: #0f0;
+      overflow: hidden;
+    }
+    header {
+      display: flex;
+      background: #111;
+      border-bottom: 1px solid #0f0;
+    }
+    header button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: black;
+      color: #0f0;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    header button.active {
+      background: #0f0;
+      color: black;
+    }
+    .tab {
+      display: none;
+      height: calc(100vh - 42px);
+      overflow: hidden;
+      position: relative;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .tab.active {
+      display: block;
+    }
+    .emoji-explode {
+      position: absolute;
+      font-size: 2rem;
+      pointer-events: none;
+      animation: explode 1s ease-out forwards;
+    }
+    @keyframes explode {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: translateY(-100px) scale(2); opacity: 0; }
+    }
+    .leak {
+      font-size: 14px;
+      animation: leakmove 5s linear forwards;
+      position: absolute;
+      white-space: nowrap;
+    }
+    @keyframes leakmove {
+      0% { left: 100%; }
+      100% { left: -100%; }
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: #0f02;
+      color: #0f0;
+      border: 1px solid #0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px;
+      cursor: move;
+      position: absolute;
+    }
+    .window {
+      position: absolute;
+      top: 100px;
+      left: 100px;
+      width: 300px;
+      height: 200px;
+      background: #111;
+      color: #0f0;
+      border: 2px solid #0f0;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .keyboard-flash {
+      position: absolute;
+      font-size: 24px;
+      animation: flash 1s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes flash {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(3); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="tab-btn active" data-tab="emoji">Emoji Hacker</button>
+  <button class="tab-btn" data-tab="keyboard">Keyboard Game</button>
+  <button class="tab-btn" data-tab="leak">Data Breach</button>
+  <button class="tab-btn" data-tab="desktop">Retro Desktop</button>
+</header>
+
+<div id="emoji" class="tab active">
+  <input type="text" id="emojiInput" placeholder="Type here..." style="width:100%; padding:10px; font-size:18px;">
+</div>
+
+<div id="keyboard" class="tab"></div>
+
+<div id="leak" class="tab"></div>
+
+<div id="desktop" class="tab">
+  <div class="icon" style="top:50px; left:50px;" onclick="spawnWindow()">📁 Folder</div>
+</div>
+
+<script>
+  // Tab logic
+  const buttons = document.querySelectorAll('.tab-btn');
+  const tabs = document.querySelectorAll('.tab');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      tabs.forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Emoji Hacker
+  const emojiList = ['🔥','💥','⚡','🤖','👾','🚀','💣','🧠','🛸','🌌','🎯','😈'];
+  const emojiInput = document.getElementById('emojiInput');
+  emojiInput.addEventListener('input', () => {
+    for(let i=0; i<5; i++) {
+      const emoji = document.createElement('div');
+      emoji.textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+      emoji.className = 'emoji-explode';
+      emoji.style.left = Math.random() * window.innerWidth + 'px';
+      emoji.style.top = (window.innerHeight - 100) + 'px';
+      document.body.appendChild(emoji);
+      setTimeout(() => emoji.remove(), 1000);
+    }
+  });
+
+  // Keyboard Game
+  const keyboardTab = document.getElementById('keyboard');
+  document.addEventListener('keydown', (e) => {
+    if (!keyboardTab.classList.contains('active')) return;
+    const flash = document.createElement('div');
+    flash.className = 'keyboard-flash';
+    flash.textContent = e.key.toUpperCase();
+    flash.style.left = (Math.random() * window.innerWidth) + 'px';
+    flash.style.top = (Math.random() * window.innerHeight) + 'px';
+    flash.style.color = `hsl(${Math.random()*360}, 100%, 70%)`;
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 1000);
+  });
+
+  // Data Leak Simulator
+  const leakTab = document.getElementById('leak');
+  const fakeUsernames = ["admin", "root", "neo", "agent_smith", "cybercat", "ai_bot"];
+  const fakePasswords = ["1234", "hunter2", "letmein", "matrix99", "passw0rd", "glitch_me"];
+  function spawnLeak() {
+    if (!leakTab.classList.contains('active')) return;
+    const leak = document.createElement('div');
+    leak.className = 'leak';
+    leak.textContent = fakeUsernames[Math.floor(Math.random()*fakeUsernames.length)] + " : " + fakePasswords[Math.floor(Math.random()*fakePasswords.length)];
+    leak.style.top = Math.random()*window.innerHeight + 'px';
+    leak.style.color = `hsl(${Math.random()*360},100%,70%)`;
+    leakTab.appendChild(leak);
+    setTimeout(() => leak.remove(), 5000);
+  }
+  setInterval(spawnLeak, 500);
+
+  // Retro Desktop: make windows
+  function spawnWindow() {
+    const win = document.createElement('div');
+    win.className = 'window';
+    win.textContent = 'This is a fake window. You opened a folder!';
+    document.getElementById('desktop').appendChild(win);
+    makeDraggable(win);
+  }
+
+  // Make windows draggable
+  function makeDraggable(el) {
+    let isDown = false;
+    let offset = [0, 0];
+    el.addEventListener('mousedown', function(e) {
+      isDown = true;
+      offset = [
+        el.offsetLeft - e.clientX,
+        el.offsetTop - e.clientY
+      ];
+    }, true);
+    document.addEventListener('mouseup', () => isDown = false, true);
+    document.addEventListener('mousemove', function(e) {
+      if (isDown) {
+        el.style.left = (e.clientX + offset[0]) + 'px';
+        el.style.top = (e.clientY + offset[1]) + 'px';
+      }
+    }, true);
+  }
+</script>
+</body>
+</html>
