@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cyber Playground</title>
+  <title>Cyber Playground with Fake Popups & Prank</title>
   <style>
     html, body {
-      margin: 0; padding: 0; height: 100%; background: Black;
+      margin: 0; padding: 0; height: 100%; background: black;
       font-family: monospace;
       color: #0af;
       overflow: hidden;
@@ -214,7 +214,7 @@
   });
 
   // Emoji Hacker
-  const emojiList = ['💥','🤖','👾','🚀','💣','🧠','🛸','🌌','💀';
+  const emojiList = ['💥','🤖','👾','🚀','💣','🧠','🛸','🌌'];
   document.getElementById('emojiInput').addEventListener('input', () => {
     for(let i=0; i<5; i++) {
       const e = document.createElement('div');
@@ -293,7 +293,7 @@
     } else if (type === 'Self-Destruct') {
       w.innerHTML = `
         <header>Self-Destruct <button title="Close" onclick="this.closest('.window').remove()">❌</button></header>
-        <div>Self-Destruct Initiated... 💣<br>In..3..2..1 💥<br>Just kidding!</div>
+        <div>Self-Destruct Initiated... 💥<br>Just kidding!</div>
       `;
     } else if (type === 'Notes') {
       w.innerHTML = `
