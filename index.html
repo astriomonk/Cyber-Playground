@@ -1,403 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Futuristic Multi-Activity Terminal</title>
-<style>
-  /* General resets and styles */
-  body, html {
-    margin: 0; padding: 0; height: 100%; width: 100%;
-    background: black;
-    color: #00f; /* blue text default */
-    font-family: "Courier New", Courier, monospace;
-    overflow: hidden;
-  }
-  .rainbow {
-    animation: rainbowAnim 4s linear infinite;
-  }
-  @keyframes rainbowAnim {
-    0% { color: red; }
-    14% { color: orange; }
-    28% { color: yellow; }
-    42% { color: green; }
-    57% { color: blue; }
-    71% { color: indigo; }
-    85% { color: violet; }
-    100% { color: red; }
-  }
-  #container {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    width: 100vw;
-  }
-  #leftPanel {
-    width: 30%;
-    background: #001022;
-    padding: 10px;
-    overflow-y: auto;
-    border-right: 2px solid #0044ff;
-  }
-  #rightPanel {
-    flex-grow: 1;
-    background: #000;
-    position: relative;
-    color: #00f;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  h2 {
-    color: #00f;
-    margin-top: 0;
-  }
-
-  /* Terminal Styles */
-  #terminal {
-    background: #000;
-    color: #00f;
-    font-family: monospace;
-    padding: 10px;
-    height: 50vh;
-    overflow-y: auto;
-    border: 1px solid #0044ff;
-    margin-bottom: 10px;
-    user-select: none;
-  }
-  #terminal.rainbow {
-    animation: rainbowAnim 5s linear infinite;
-  }
-  #terminalInput {
-    width: 100%;
-    font-family: monospace;
-    font-size: 1rem;
-    padding: 5px;
-    border: none;
-    border-top: 1px solid #0044ff;
-    background: #001011;
-    color: #00f;
-    outline: none;
-  }
-  #terminalInput.rainbow {
-    animation: rainbowAnim 4s linear infinite;
-  }
-
-  /* Buttons and activity selectors */
-  button.activity-btn {
-    width: 100%;
-    margin: 4px 0;
-    padding: 10px;
-    font-family: monospace;
-    font-size: 1rem;
-    color: #00f;
-    background: #001022;
-    border: 1px solid #0044ff;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  button.activity-btn:hover {
-    background: #0033ff;
-    color: #fff;
-  }
-  button.activity-btn.rainbow {
-    animation: rainbowAnim 4s linear infinite;
-  }
-
-  /* Activity Display Area */
-  #activityDisplay {
-    flex-grow: 1;
-    background: #000;
-    border-top: 2px solid #0044ff;
-    padding: 15px;
-    overflow: auto;
-    color: #00f;
-    font-family: monospace;
-    font-size: 1.1rem;
-  }
-  #activityDisplay.rainbow {
-    animation: rainbowAnim 5s linear infinite;
-  }
-
-  /* Matrix Rain Canvas */
-  #matrixCanvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 0;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>🧠 Futuristic Terminal Hub</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Courier New', monospace;
+      background: #001f3f;
+      color: #00aaff;
+      overflow: hidden;
+      height: 100%;
+      touch-action: manipulation;
+    }
+    h1 {
+      text-align: center;
+      padding: 1rem;
+      user-select: none;
+      cursor: pointer;
+    }
+    #terminal, #desktop {
+      display: none;
+      padding: 20px;
+    }
+    button {
+      background: transparent;
+      border: 1px solid #00aaff;
+      color: #00aaff;
+      padding: 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .popup {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 300px;
+      height: 200px;
+      background: #001a33;
+      color: white;
+      border: 2px solid #00aaff;
+      padding: 10px;
+      z-index: 999;
+    }
+    .rainbow * {
+      animation: rainbow 2s infinite linear;
+    }
+    @keyframes rainbow {
+      0% { color: red; }
+      14% { color: orange; }
+      28% { color: yellow; }
+      42% { color: green; }
+      57% { color: cyan; }
+      71% { color: blue; }
+      85% { color: violet; }
+      100% { color: red; }
+    }
+    /* Tap Zones */
+    .zone {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      opacity: 0;
+    }
+    #up { top: 0; left: 25%; height: 25%; width: 50%; }
+    #down { bottom: 0; left: 25%; height: 25%; width: 50%; }
+    #left { top: 25%; left: 0; height: 50%; width: 25%; }
+    #right { top: 25%; right: 0; height: 50%; width: 25%; }
+    #b { bottom: 0; left: 0; height: 25%; width: 25%; }
+    #a { bottom: 0; right: 0; height: 25%; width: 25%; }
+  </style>
 </head>
 <body>
-<div id="container">
-  <div id="leftPanel">
-    <h2>Activities</h2>
-    <button id="btnTerminal" class="activity-btn">Terminal</button>
-    <button id="btnMatrix" class="activity-btn">Matrix Rain</button>
-    <button id="btnRetro" class="activity-btn">Retro Desktop</button>
-    <button id="btnFullscreen" class="activity-btn" id="btn0">Fullscreen (0)</button>
-    <button id="btnFakePopup" class="activity-btn">Fake Popup</button>
-    <button id="btnRainbowMode" class="activity-btn">Toggle Rainbow Mode (Konami)</button>
-    <hr />
-    <div><b>Retro Desktop Extras:</b></div>
-    <button id="btnCalculator" class="activity-btn">Calculator</button>
-    <button id="btnNotepad" class="activity-btn">Notepad</button>
-    <button id="btnClock" class="activity-btn">Clock</button>
-    <button id="btnColorPicker" class="activity-btn">Color Picker</button>
-  </div>
 
-  <div id="rightPanel">
-    <div id="terminal" hidden></div>
-    <input id="terminalInput" type="text" placeholder="Enter command..." hidden autocomplete="off" spellcheck="false" />
-    <canvas id="matrixCanvas" hidden></canvas>
-    <div id="activityDisplay" hidden></div>
-  </div>
+<h1 id="title">🧠 Futuristic Terminal Hub</h1>
+
+<!-- Tap Zones -->
+<div id="up" class="zone"></div>
+<div id="down" class="zone"></div>
+<div id="left" class="zone"></div>
+<div id="right" class="zone"></div>
+<div id="b" class="zone"></div>
+<div id="a" class="zone"></div>
+
+<div id="terminal">
+  <p>> Welcome to the terminal. Type commands (Coming Soon...)</p>
+</div>
+
+<div id="desktop">
+  <button onclick="openPopup('🌀 Glitch Viewer', glitchEffect)">🌀 Glitch Viewer</button>
+  <button onclick="secretTap('UP')">Secret UP</button>
+  <button onclick="secretTap('DOWN')">Secret DOWN</button>
+  <button onclick="secretTap('LEFT')">Secret LEFT</button>
+  <button onclick="secretTap('RIGHT')">Secret RIGHT</button>
+  <button onclick="secretTap('B')">Secret B</button>
+  <button onclick="secretTap('A')">Secret A</button>
 </div>
 
 <script>
-  // Elements
-  const terminal = document.getElementById('terminal');
-  const terminalInput = document.getElementById('terminalInput');
-  const matrixCanvas = document.getElementById('matrixCanvas');
-  const activityDisplay = document.getElementById('activityDisplay');
-  const btnTerminal = document.getElementById('btnTerminal');
-  const btnMatrix = document.getElementById('btnMatrix');
-  const btnRetro = document.getElementById('btnRetro');
-  const btnFullscreen = document.getElementById('btnFullscreen'); // Fullscreen toggle button (0)
-  const btnFakePopup = document.getElementById('btnFakePopup');
-  const btnRainbowMode = document.getElementById('btnRainbowMode');
-  const btnCalculator = document.getElementById('btnCalculator');
-  const btnNotepad = document.getElementById('btnNotepad');
-  const btnClock = document.getElementById('btnClock');
-  const btnColorPicker = document.getElementById('btnColorPicker');
+  // Show elements
+  document.getElementById('terminal').style.display = 'block';
+  document.getElementById('desktop').style.display = 'block';
 
-  // State
-  let rainbowMode = false;
-
-  // Helper: Toggle visibility
-  function hideAllActivities() {
-    terminal.hidden = true;
-    terminalInput.hidden = true;
-    matrixCanvas.hidden = true;
-    activityDisplay.hidden = true;
-    stopMatrix();
-  }
-
-  // Rainbow toggle function
-  function toggleRainbowMode(on) {
-    if(on === undefined) on = !rainbowMode;
-    rainbowMode = on;
-    const elements = [document.body, terminal, terminalInput, activityDisplay];
-    const buttons = document.querySelectorAll('button.activity-btn');
-    elements.forEach(el => {
-      if (rainbowMode) el.classList.add('rainbow');
-      else el.classList.remove('rainbow');
-    });
-    buttons.forEach(btn => {
-      if (rainbowMode) btn.classList.add('rainbow');
-      else btn.classList.remove('rainbow');
-    });
-  }
-
-  // Terminal activity
-  function showTerminal() {
-    hideAllActivities();
-    terminal.hidden = false;
-    terminalInput.hidden = false;
-    terminal.textContent = 'Welcome to the Futuristic Terminal.\nType "help" for commands.\n';
-    terminalInput.value = '';
-    terminalInput.focus();
-  }
-
-  terminalInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const cmd = terminalInput.value.trim().toLowerCase();
-      if(cmd === '') return;
-      terminal.textContent += `> ${cmd}\n`;
-      handleTerminalCommand(cmd);
-      terminalInput.value = '';
-      terminal.scrollTop = terminal.scrollHeight;
+  // Rainbow toggle
+  function activateRainbow() {
+    if (!document.body.classList.contains('rainbow')) {
+      document.body.classList.add('rainbow');
+      alert("🌈 Rainbow Mode Activated!");
     }
+  }
+
+  // Glitch effect
+  function glitchEffect(container) {
+    container.innerHTML += "<p>🧬 Glitching...</p>";
+    let i = 0;
+    const intv = setInterval(() => {
+      container.innerHTML += "<p>0x" + Math.random().toString(16).substr(2, 8).toUpperCase() + "</p>";
+      i++;
+      if (i > 10) clearInterval(intv);
+    }, 200);
+  }
+
+  // Open fake popup
+  function openPopup(title, effectFn) {
+    const popup = document.createElement('div');
+    popup.className = 'popup';
+    popup.innerHTML = `<h3>${title}</h3><div id="popup-content"></div><button onclick="this.parentElement.remove()">Close</button>`;
+    document.body.appendChild(popup);
+    if (effectFn) effectFn(popup.querySelector("#popup-content"));
+  }
+
+  // Long press fallback
+  let longPressTimer;
+  const title = document.getElementById('title');
+  title.addEventListener('mousedown', () => {
+    longPressTimer = setTimeout(activateRainbow, 5000);
   });
-
-  function handleTerminalCommand(cmd) {
-    if (cmd === 'help') {
-      terminal.textContent += 'Commands: help, clear, echo [text], time, rainbow, exit\n';
-    } else if (cmd === 'clear') {
-      terminal.textContent = '';
-    } else if (cmd.startsWith('echo ')) {
-      terminal.textContent += cmd.substring(5) + '\n';
-    } else if (cmd === 'time') {
-      terminal.textContent += new Date().toLocaleTimeString() + '\n';
-    } else if (cmd === 'rainbow') {
-      toggleRainbowMode();
-      terminal.textContent += 'Rainbow mode toggled.\n';
-    } else if (cmd === 'exit') {
-      hideAllActivities();
-    } else {
-      terminal.textContent += 'Unknown command.\n';
-    }
-  }
-
-  // Matrix rain activity
-  let matrixInterval;
-  function startMatrix() {
-    matrixCanvas.hidden = false;
-    const ctx = matrixCanvas.getContext('2d');
-    let width, height;
-    function resize() {
-      width = matrixCanvas.width = matrixCanvas.clientWidth;
-      height = matrixCanvas.height = matrixCanvas.clientHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-    const columns = Math.floor(width / 14);
-    const drops = new Array(columns).fill(1);
-    ctx.font = '14px monospace';
-
-    matrixInterval = setInterval(() => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = rainbowMode ? `hsl(${Math.floor(Math.random()*360)}, 100%, 70%)` : '#00f';
-      for(let i=0; i < drops.length; i++) {
-        const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-        ctx.fillText(text, i * 14, drops[i] * 14);
-        if(drops[i]*14 > height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-      }
-    }, 40);
-  }
-  function stopMatrix() {
-    clearInterval(matrixInterval);
-  }
-
-  // Retro Desktop area
-  function showRetro() {
-    hideAllActivities();
-    activityDisplay.hidden = false;
-    activityDisplay.textContent = 'Welcome to Retro Desktop!\n\nSelect an app on the left to launch it.';
-  }
-
-  // Calculator app
-  function showCalculator() {
-    hideAllActivities();
-    activityDisplay.hidden = false;
-    activityDisplay.innerHTML = `
-      <div>
-        <input type="text" id="calcDisplay" style="width: 100%; font-size:1.5rem; margin-bottom:10px; background:#001011; color:#00f; border:1px solid #0044ff; padding:5px;"/>
-        <div id="calcButtons" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:5px;">
-          <button>7</button><button>8</button><button>9</button><button>/</button>
-          <button>4</button><button>5</button><button>6</button><button>*</button>
-          <button>1</button><button>2</button><button>3</button><button>-</button>
-          <button>0</button><button>.</button><button>=</button><button>+</button>
-        </div>
-      </div>
-    `;
-    const display = document.getElementById('calcDisplay');
-    const buttons = document.getElementById('calcButtons');
-    buttons.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if(btn.textContent === '=') {
-          try {
-            display.value = eval(display.value) || '';
-          } catch {
-            display.value = 'Error';
-          }
-        } else {
-          if(display.value === 'Error') display.value = '';
-          display.value += btn.textContent;
-        }
-      });
-    });
-  }
-
-  // Notepad app
-  function showNotepad() {
-    hideAllActivities();
-    activityDisplay.hidden = false;
-    activityDisplay.innerHTML = `<textarea style="width: 100%; height: 90%; background:#001011; color:#00f; border:1px solid #0044ff; font-family: monospace; font-size:1rem; padding:10px;" placeholder="Start typing..."></textarea>`;
-  }
-
-  // Clock app
-  function showClock() {
-    hideAllActivities();
-    activityDisplay.hidden = false;
-    function updateClock() {
-      const now = new Date();
-      activityDisplay.textContent = now.toLocaleTimeString();
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-  }
-
-  // Color picker app
-  function showColorPicker() {
-    hideAllActivities();
-    activityDisplay.hidden = false;
-    activityDisplay.innerHTML = `
-      <input type="color" id="colorInput" value="#0000ff" />
-      <p id="colorValue" style="margin-top:10px; font-size:1.2rem;">#0000ff</p>
-    `;
-    const colorInput = document.getElementById('colorInput');
-    const colorValue = document.getElementById('colorValue');
-    colorInput.addEventListener('input', () => {
-      colorValue.textContent = colorInput.value;
-    });
-  }
-
-  // Fake popup
-  function showFakePopup() {
-    alert('Warning! System overload detected.\nPlease wait...');
-  }
-
-  // Fullscreen toggle
-  btnFullscreen.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
-        alert(`Fullscreen request failed: ${err.message}`);
-      });
-    } else {
-      document.exitFullscreen();
-    }
+  title.addEventListener('mouseup', () => clearTimeout(longPressTimer));
+  title.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
+  title.addEventListener('touchstart', () => {
+    longPressTimer = setTimeout(activateRainbow, 5000);
   });
+  title.addEventListener('touchend', () => clearTimeout(longPressTimer));
 
-  // Konami code detection for rainbow mode
-  const konamiCode = [38,38,40,40,37,39,37,39,66,65];
-  let konamiPosition = 0;
+  // Fullscreen on 0
   window.addEventListener('keydown', e => {
-    if(e.keyCode === konamiCode[konamiPosition]) {
-      konamiPosition++;
-      if(konamiPosition === konamiCode.length) {
-        toggleRainbowMode(true);
-        alert('Rainbow mode activated by Konami code!');
-        konamiPosition = 0;
-      }
-    } else {
-      konamiPosition = 0;
+    if (e.key === '0') {
+      let docElm = document.documentElement;
+      if (docElm.requestFullscreen) docElm.requestFullscreen();
     }
   });
 
-  // Button event listeners
-  btnTerminal.addEventListener('click', showTerminal);
-  btnMatrix.addEventListener('click', () => {
-    hideAllActivities();
-    matrixCanvas.hidden = false;
-    startMatrix();
-  });
-  btnRetro.addEventListener('click', showRetro);
-  btnFakePopup.addEventListener('click', showFakePopup);
-  btnRainbowMode.addEventListener('click', () => toggleRainbowMode());
+  // Konami sequence for tap zones and buttons
+  const konamiCode = ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'B', 'A'];
+  let inputBuffer = [];
 
-  btnCalculator.addEventListener('click', showCalculator);
-  btnNotepad.addEventListener('click', showNotepad);
-  btnClock.addEventListener('click', showClock);
-  btnColorPicker.addEventListener('click', showColorPicker);
+  function secretTap(key) {
+    inputBuffer.push(key);
+    if (inputBuffer.length > konamiCode.length) inputBuffer.shift();
+    if (JSON.stringify(inputBuffer) === JSON.stringify(konamiCode)) {
+      activateRainbow();
+    }
+  }
 
-  // Load default activity
-  showTerminal();
-
+  // Tap zone support
+  const zoneMap = {
+    up: 'UP', down: 'DOWN', left: 'LEFT', right: 'RIGHT', b: 'B', a: 'A'
+  };
+  for (const id in zoneMap) {
+    document.getElementById(id).addEventListener('click', () => secretTap(zoneMap[id]));
+  }
 </script>
+
 </body>
 </html>
